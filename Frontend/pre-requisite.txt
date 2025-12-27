@@ -1,0 +1,1552 @@
+# ConnectIn - API Endpoints, Input Formats & MongoDB Schemas
+
+## Table of Contents
+1. Authentication APIs
+2. User Profile APIs
+3. Post APIs
+4. Comment APIs
+5. Service/Trade APIs
+6. Booking APIs
+7. Connection APIs
+8. Search APIs
+9. MongoDB Schemas
+
+---
+
+## 1. AUTHENTICATION APIs
+
+### 1.1 Register User
+**Endpoint:** `POST /api/auth/register`
+
+**Request Body:**
+```json
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "SecurePassword123!",
+  "headline": "Software Engineer",
+  "location": "New York, NY"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "User registered successfully",
+  "data": {
+    "userId": "64a1b2c3d4e5f6g7h8i9j0k1",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "user": {
+      "id": "64a1b2c3d4e5f6g7h8i9j0k1",
+      "name": "John Doe",
+      "email": "john@example.com",
+      "headline": "Software Engineer",
+      "avatarUrl": null
+    }
+  }
+}
+```
+
+### 1.2 Login User
+**Endpoint:** `POST /api/auth/login`
+
+**Request Body:**
+```json
+{
+  "email": "john@example.com",
+  "password": "SecurePassword123!"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Login successful",
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "user": {
+      "id": "64a1b2c3d4e5f6g7h8i9j0k1",
+      "name": "John Doe",
+      "email": "john@example.com",
+      "headline": "Software Engineer",
+      "location": "New York, NY",
+      "avatarUrl": "https://example.com/avatar.jpg",
+      "bio": "Passionate about building great software",
+      "profileViews": 156,
+      "connections": 284
+    }
+  }
+}
+```
+
+### 1.3 Logout User
+**Endpoint:** `POST /api/auth/logout`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Logged out successfully"
+}
+```
+
+---
+
+## 2. USER PROFILE APIs
+
+### 2.1 Get Current User Profile
+**Endpoint:** `GET /api/users/me`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "64a1b2c3d4e5f6g7h8i9j0k1",
+    "name": "John Doe",
+    "email": "john@example.com",
+    "headline": "Software Engineer at Google",
+    "location": "New York, NY",
+    "bio": "Passionate about building scalable applications...",
+    "avatarUrl": "https://example.com/avatar.jpg",
+    "profileViews": 156,
+    "connections": 284,
+    "createdAt": "2024-01-15T10:30:00Z",
+    "updatedAt": "2024-12-27T08:45:00Z"
+  }
+}
+```
+
+### 2.2 Get User Profile by ID
+**Endpoint:** `GET /api/users/:userId`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "64a1b2c3d4e5f6g7h8i9j0k1",
+    "name": "Sarah Mitchell",
+    "headline": "Software Engineer at Google",
+    "location": "San Francisco, CA",
+    "bio": "Building the future of AI...",
+    "avatarUrl": "https://example.com/avatar2.jpg",
+    "profileViews": 423,
+    "connections": 512,
+    "isOwnProfile": false,
+    "isConnected": true
+  }
+}
+```
+
+### 2.3 Update User Profile
+**Endpoint:** `PUT /api/users/me`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+Content-Type: multipart/form-data
+```
+
+**Request Body (Form Data):**
+```
+name: "John Doe Updated"
+headline: "Senior Software Engineer at Google"
+location: "San Francisco, CA"
+bio: "Updated bio text..."
+avatar: <File> (optional - image file)
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Profile updated successfully",
+  "data": {
+    "id": "64a1b2c3d4e5f6g7h8i9j0k1",
+    "name": "John Doe Updated",
+    "headline": "Senior Software Engineer at Google",
+    "location": "San Francisco, CA",
+    "bio": "Updated bio text...",
+    "avatarUrl": "https://example.com/new-avatar.jpg",
+    "updatedAt": "2024-12-27T09:15:00Z"
+  }
+}
+```
+
+### 2.4 Search Users
+**Endpoint:** `GET /api/users/search?query=<searchTerm>&limit=<number>`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Query Parameters:**
+- `query` (required): Search term
+- `limit` (optional): Number of results (default: 5)
+
+**Example:** `GET /api/users/search?query=sarah&limit=5`
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "64a1b2c3d4e5f6g7h8i9j0k1",
+      "name": "Sarah Mitchell",
+      "headline": "Software Engineer at Google",
+      "avatarUrl": "https://example.com/avatar.jpg"
+    },
+    {
+      "id": "64a1b2c3d4e5f6g7h8i9j0k2",
+      "name": "Sarah Johnson",
+      "headline": "Product Manager at Microsoft",
+      "avatarUrl": null
+    }
+  ]
+}
+```
+
+---
+
+## 3. POST APIs
+
+### 3.1 Get All Posts (Feed)
+**Endpoint:** `GET /api/posts?sortBy=<time|likes>&limit=<number>&offset=<number>`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Query Parameters:**
+- `sortBy` (optional): "time" or "likes" (default: "time")
+- `limit` (optional): Number of posts (default: 20)
+- `offset` (optional): Pagination offset (default: 0)
+
+**Example:** `GET /api/posts?sortBy=likes&limit=10`
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "posts": [
+      {
+        "id": "post123",
+        "authorId": "user456",
+        "author": "Sarah Mitchell",
+        "authorAvatar": "https://example.com/avatar.jpg",
+        "headline": "Software Engineer at Google",
+        "description": "Just completed a machine learning project...",
+        "image": "https://example.com/post-image.jpg",
+        "tradeCategory": "General",
+        "likes": 234,
+        "comments": 45,
+        "reposts": 18,
+        "isLiked": false,
+        "createdAt": "2024-12-25T10:30:00Z",
+        "timeAgo": "2d"
+      }
+    ],
+    "totalCount": 150,
+    "hasMore": true
+  }
+}
+```
+
+### 3.2 Get Posts by User ID
+**Endpoint:** `GET /api/posts/user/:userId?limit=<number>&offset=<number>`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "posts": [...],
+    "totalCount": 42,
+    "hasMore": false
+  }
+}
+```
+
+### 3.3 Get My Posts
+**Endpoint:** `GET /api/posts/me`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "post789",
+      "authorId": "user123",
+      "author": "John Doe",
+      "authorAvatar": "https://example.com/my-avatar.jpg",
+      "headline": "Software Engineer",
+      "description": "My latest post...",
+      "image": null,
+      "tradeCategory": "General",
+      "likes": 56,
+      "comments": 12,
+      "reposts": 4,
+      "createdAt": "2024-12-27T08:00:00Z"
+    }
+  ]
+}
+```
+
+### 3.4 Create Post
+**Endpoint:** `POST /api/posts`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+Content-Type: multipart/form-data
+```
+
+**Request Body (Form Data):**
+```
+description: "This is my new post..."
+tradeCategory: "General" (or "Carpenter", "Plumber", etc.)
+image: <File> (optional)
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Post created successfully",
+  "data": {
+    "id": "post999",
+    "authorId": "user123",
+    "author": "John Doe",
+    "authorAvatar": "https://example.com/avatar.jpg",
+    "headline": "Software Engineer",
+    "description": "This is my new post...",
+    "image": "https://example.com/uploaded-image.jpg",
+    "tradeCategory": "General",
+    "likes": 0,
+    "comments": 0,
+    "reposts": 0,
+    "createdAt": "2024-12-27T09:30:00Z"
+  }
+}
+```
+
+### 3.5 Update Post
+**Endpoint:** `PUT /api/posts/:postId`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "description": "Updated post description..."
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Post updated successfully",
+  "data": {
+    "id": "post999",
+    "description": "Updated post description...",
+    "updatedAt": "2024-12-27T10:00:00Z"
+  }
+}
+```
+
+### 3.6 Delete Post
+**Endpoint:** `DELETE /api/posts/:postId`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Post deleted successfully"
+}
+```
+
+### 3.7 Like/Unlike Post
+**Endpoint:** `POST /api/posts/:postId/like`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Post liked successfully",
+  "data": {
+    "isLiked": true,
+    "likeCount": 235
+  }
+}
+```
+
+---
+
+## 4. COMMENT APIs
+
+### 4.1 Get Comments for Post
+**Endpoint:** `GET /api/posts/:postId/comments?limit=<number>&offset=<number>`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "comments": [
+      {
+        "id": "comment123",
+        "postId": "post999",
+        "author": "Jane Smith",
+        "authorId": "user456",
+        "authorAvatar": "https://example.com/avatar2.jpg",
+        "text": "Great post! Thanks for sharing.",
+        "createdAt": "2024-12-27T09:45:00Z",
+        "timestamp": "15m"
+      }
+    ],
+    "totalCount": 12,
+    "hasMore": false
+  }
+}
+```
+
+### 4.2 Add Comment
+**Endpoint:** `POST /api/posts/:postId/comments`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "text": "This is my comment on the post..."
+}
+```
+
+**Validation:**
+- `text`: Required, max 500 characters
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Comment added successfully",
+  "data": {
+    "id": "comment789",
+    "postId": "post999",
+    "author": "John Doe",
+    "authorId": "user123",
+    "authorAvatar": "https://example.com/avatar.jpg",
+    "text": "This is my comment on the post...",
+    "createdAt": "2024-12-27T10:00:00Z",
+    "timestamp": "Just now"
+  }
+}
+```
+
+### 4.3 Update Comment
+**Endpoint:** `PUT /api/comments/:commentId`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "text": "Updated comment text..."
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Comment updated successfully",
+  "data": {
+    "id": "comment789",
+    "text": "Updated comment text...",
+    "updatedAt": "2024-12-27T10:15:00Z"
+  }
+}
+```
+
+### 4.4 Delete Comment
+**Endpoint:** `DELETE /api/comments/:commentId`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Comment deleted successfully"
+}
+```
+
+---
+
+## 5. SERVICE/TRADE APIs
+
+### 5.1 Get Service Posts
+**Endpoint:** `GET /api/services?category=<category>&sortBy=<time|likes>&limit=<number>`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Query Parameters:**
+- `category` (optional): "All", "Carpenter", "Plumber", "Electrician", "Painter", etc.
+- `sortBy` (optional): "time" or "likes"
+- `limit` (optional): Number of posts
+
+**Example:** `GET /api/services?category=Carpenter&sortBy=likes&limit=10`
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "services": [
+      {
+        "id": "post102",
+        "authorId": "user102",
+        "author": "John's Carpentry Services",
+        "authorAvatar": null,
+        "headline": "Professional Carpenter - 15 Years Experience",
+        "description": "Looking for custom furniture or home renovations?...",
+        "image": "https://example.com/service-image.jpg",
+        "tradeCategory": "Carpenter",
+        "likes": 42,
+        "comments": 8,
+        "createdAt": "2024-12-26T15:00:00Z",
+        "timeAgo": "5h"
+      }
+    ],
+    "totalCount": 25,
+    "hasMore": true
+  }
+}
+```
+
+### 5.2 Get Trade Categories
+**Endpoint:** `GET /api/services/categories`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    "All",
+    "Carpenter",
+    "Plumber",
+    "Electrician",
+    "Painter",
+    "Mason",
+    "Welder",
+    "HVAC Technician",
+    "Landscaper",
+    "General"
+  ]
+}
+```
+
+---
+
+## 6. BOOKING APIs
+
+### 6.1 Get All Bookings
+**Endpoint:** `GET /api/bookings?status=<status>&type=<customer|provider>`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Query Parameters:**
+- `status` (optional): "pending", "approved", "rejected", "completed"
+- `type` (optional): "customer" (bookings I made) or "provider" (bookings for my services)
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "bookings": [
+      {
+        "id": "booking123",
+        "customerId": "user123",
+        "customerName": "John Doe",
+        "customerAvatar": "https://example.com/avatar.jpg",
+        "serviceProviderId": "user102",
+        "serviceProviderName": "John's Carpentry Services",
+        "serviceProviderAvatar": null,
+        "tradeCategory": "Carpenter",
+        "serviceDescription": "Custom cabinet installation",
+        "date": "2024-12-30",
+        "time": "10:00 AM",
+        "location": "123 Main St, New York, NY",
+        "status": "pending",
+        "createdAt": "2024-12-27T09:00:00Z"
+      }
+    ],
+    "totalCount": 5,
+    "pending": 2,
+    "approved": 1,
+    "rejected": 0,
+    "completed": 2
+  }
+}
+```
+
+### 6.2 Create Booking
+**Endpoint:** `POST /api/bookings`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "serviceProviderId": "user102",
+  "tradeCategory": "Carpenter",
+  "serviceDescription": "Need custom cabinets for kitchen",
+  "date": "2024-12-30",
+  "time": "10:00 AM",
+  "location": "123 Main St, New York, NY"
+}
+```
+
+**Validation:**
+- `serviceProviderId`: Required, must be valid user ID
+- `serviceDescription`: Required, max 500 characters
+- `date`: Required, must be future date (YYYY-MM-DD format)
+- `time`: Required
+- `location`: Required, max 200 characters
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Booking created successfully",
+  "data": {
+    "id": "booking456",
+    "customerId": "user123",
+    "customerName": "John Doe",
+    "serviceProviderId": "user102",
+    "serviceProviderName": "John's Carpentry Services",
+    "tradeCategory": "Carpenter",
+    "serviceDescription": "Need custom cabinets for kitchen",
+    "date": "2024-12-30",
+    "time": "10:00 AM",
+    "location": "123 Main St, New York, NY",
+    "status": "pending",
+    "createdAt": "2024-12-27T10:30:00Z"
+  }
+}
+```
+
+### 6.3 Update Booking Status
+**Endpoint:** `PUT /api/bookings/:bookingId/status`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "status": "approved"
+}
+```
+
+**Valid statuses:** "approved", "rejected", "completed"
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Booking status updated successfully",
+  "data": {
+    "id": "booking456",
+    "status": "approved",
+    "updatedAt": "2024-12-27T11:00:00Z"
+  }
+}
+```
+
+### 6.4 Get Upcoming Bookings
+**Endpoint:** `GET /api/bookings/upcoming`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "asCustomer": {
+      "id": "booking123",
+      "serviceProviderName": "John's Carpentry Services",
+      "tradeCategory": "Carpenter",
+      "date": "2024-12-30",
+      "time": "10:00 AM"
+    },
+    "asProvider": {
+      "id": "booking789",
+      "customerName": "Jane Smith",
+      "tradeCategory": "Carpenter",
+      "date": "2024-12-31",
+      "time": "2:00 PM"
+    }
+  }
+}
+```
+
+---
+
+## 7. CONNECTION APIs
+
+### 7.1 Get My Connections
+**Endpoint:** `GET /api/connections?limit=<number>&offset=<number>`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "connections": [
+      {
+        "id": "user456",
+        "name": "Sarah Mitchell",
+        "headline": "Software Engineer at Google",
+        "avatarUrl": "https://example.com/avatar.jpg",
+        "mutualConnections": 12,
+        "connectedAt": "2024-11-15T10:00:00Z"
+      }
+    ],
+    "totalCount": 284
+  }
+}
+```
+
+### 7.2 Get Connection Requests
+**Endpoint:** `GET /api/connections/requests`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "received": [
+      {
+        "id": "request123",
+        "fromUserId": "user789",
+        "fromUserName": "Michael Chen",
+        "fromUserHeadline": "Product Manager",
+        "fromUserAvatar": null,
+        "mutualConnections": 5,
+        "createdAt": "2024-12-26T15:00:00Z"
+      }
+    ],
+    "sent": [
+      {
+        "id": "request456",
+        "toUserId": "user101",
+        "toUserName": "Emily Thompson",
+        "toUserHeadline": "Data Scientist",
+        "toUserAvatar": "https://example.com/avatar3.jpg",
+        "createdAt": "2024-12-25T10:00:00Z"
+      }
+    ]
+  }
+}
+```
+
+### 7.3 Send Connection Request
+**Endpoint:** `POST /api/connections/request`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "userId": "user789"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Connection request sent successfully",
+  "data": {
+    "id": "request999",
+    "toUserId": "user789",
+    "status": "pending",
+    "createdAt": "2024-12-27T11:30:00Z"
+  }
+}
+```
+
+### 7.4 Accept/Reject Connection Request
+**Endpoint:** `PUT /api/connections/request/:requestId`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "action": "accept"
+}
+```
+
+**Valid actions:** "accept", "reject"
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Connection request accepted",
+  "data": {
+    "id": "request123",
+    "status": "accepted",
+    "connection": {
+      "userId": "user789",
+      "name": "Michael Chen",
+      "headline": "Product Manager"
+    }
+  }
+}
+```
+
+### 7.5 Remove Connection
+**Endpoint:** `DELETE /api/connections/:userId`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Connection removed successfully"
+}
+```
+
+### 7.6 Get Connection Suggestions
+**Endpoint:** `GET /api/connections/suggestions?limit=<number>`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "user888",
+      "name": "David Rodriguez",
+      "headline": "Full Stack Developer",
+      "avatarUrl": null,
+      "mutualConnections": 8,
+      "reason": "Works at Google"
+    }
+  ]
+}
+```
+
+---
+
+## 8. SEARCH APIs
+
+### 8.1 Global Search
+**Endpoint:** `GET /api/search?query=<term>&type=<users|posts|all>&limit=<number>`
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Query Parameters:**
+- `query` (required): Search term
+- `type` (optional): "users", "posts", or "all" (default: "all")
+- `limit` (optional): Number of results per type
+
+**Example:** `GET /api/search?query=machine%20learning&type=all&limit=5`
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "users": [
+      {
+        "id": "user107",
+        "name": "Sarah Mitchell",
+        "headline": "Software Engineer at Google - ML Specialist",
+        "avatarUrl": "https://example.com/avatar.jpg"
+      }
+    ],
+    "posts": [
+      {
+        "id": "post107",
+        "author": "Sarah Mitchell",
+        "description": "Just completed a machine learning project...",
+        "likes": 234,
+        "createdAt": "2024-12-25T10:30:00Z"
+      }
+    ]
+  }
+}
+```
+
+---
+
+## 9. MONGODB SCHEMAS
+
+### 9.1 User Schema
+```javascript
+{
+  _id: ObjectId,
+  name: {
+    type: String,
+    required: true,
+    maxLength: 100
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    lowercase: true
+  },
+  password: {
+    type: String,
+    required: true,
+    minLength: 8
+    // Hashed using bcrypt
+  },
+  headline: {
+    type: String,
+    maxLength: 220,
+    default: ""
+  },
+  location: {
+    type: String,
+    maxLength: 100,
+    default: ""
+  },
+  bio: {
+    type: String,
+    maxLength: 2600,
+    default: ""
+  },
+  avatarUrl: {
+    type: String,
+    default: null
+  },
+  profileViews: {
+    type: Number,
+    default: 0
+  },
+  connections: [{
+    type: ObjectId,
+    ref: 'User'
+  }],
+  connectionCount: {
+    type: Number,
+    default: 0
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
+  }
+}
+
+// Indexes
+{
+  email: 1,
+  name: 'text',
+  headline: 'text'
+}
+```
+
+### 9.2 Post Schema
+```javascript
+{
+  _id: ObjectId,
+  authorId: {
+    type: ObjectId,
+    ref: 'User',
+    required: true
+  },
+  description: {
+    type: String,
+    required: true,
+    maxLength: 3000
+  },
+  imageUrl: {
+    type: String,
+    default: null
+  },
+  tradeCategory: {
+    type: String,
+    enum: [
+      'General',
+      'Carpenter',
+      'Plumber',
+      'Electrician',
+      'Painter',
+      'Mason',
+      'Welder',
+      'HVAC Technician',
+      'Landscaper',
+      'Other'
+    ],
+    default: 'General'
+  },
+  likes: [{
+    userId: {
+      type: ObjectId,
+      ref: 'User'
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  likeCount: {
+    type: Number,
+    default: 0
+  },
+  commentCount: {
+    type: Number,
+    default: 0
+  },
+  repostCount: {
+    type: Number,
+    default: 0
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
+  }
+}
+
+// Indexes
+{
+  authorId: 1,
+  createdAt: -1,
+  likeCount: -1,
+  tradeCategory: 1
+}
+```
+
+### 9.3 Comment Schema
+```javascript
+{
+  _id: ObjectId,
+  postId: {
+    type: ObjectId,
+    ref: 'Post',
+    required: true
+  },
+  authorId: {
+    type: ObjectId,
+    ref: 'User',
+    required: true
+  },
+  text: {
+    type: String,
+    required: true,
+    maxLength: 500
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
+  }
+}
+
+// Indexes
+{
+  postId: 1,
+  createdAt: -1
+}
+```
+
+### 9.4 Booking Schema
+```javascript
+{
+  _id: ObjectId,
+  customerId: {
+    type: ObjectId,
+    ref: 'User',
+    required: true
+  },
+  serviceProviderId: {
+    type: ObjectId,
+    ref: 'User',
+    required: true
+  },
+  tradeCategory: {
+    type: String,
+    required: true
+  },
+  serviceDescription: {
+    type: String,
+    required: true,
+    maxLength: 500
+  },
+  date: {
+    type: String,
+    required: true
+    // Format: YYYY-MM-DD
+  },
+  time: {
+    type: String,
+    required: true
+    // Format: HH:MM AM/PM
+  },
+  location: {
+    type: String,
+    required: true,
+    maxLength: 200
+  },
+  status: {
+    type: String,
+    enum: ['pending', 'approved', 'rejected', 'completed'],
+    default: 'pending'
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
+  }
+}
+
+// Indexes
+{
+  customerId: 1,
+  serviceProviderId: 1,
+  status: 1,
+  date: 1
+}
+```
+
+### 9.5 Connection Schema
+```javascript
+{
+  _id: ObjectId,
+  userId: {
+    type: ObjectId,
+    ref: 'User',
+    required: true
+  },
+  connectedUserId: {
+    type: ObjectId,
+    ref: 'User',
+    required: true
+  },
+  status: {
+    type: String,
+    enum: ['pending', 'accepted', 'rejected'],
+    default: 'pending'
+  },
+  requestedBy: {
+    type: ObjectId,
+    ref: 'User',
+    required: true
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
+  }
+}
+
+// Indexes
+{
+  userId: 1,
+  connectedUserId: 1,
+  status: 1
+}
+
+// Compound unique index
+{
+  userId: 1,
+  connectedUserId: 1
+}, {
+  unique: true
+}
+```
+
+### 9.6 Notification Schema
+```javascript
+{
+  _id: ObjectId,
+  userId: {
+    type: ObjectId,
+    ref: 'User',
+    required: true
+  },
+  type: {
+    type: String,
+    enum: [
+      'connection_request',
+      'connection_accepted',
+      'post_like',
+      'post_comment',
+      'booking_request',
+      'booking_approved',
+      'booking_rejected'
+    ],
+    required: true
+  },
+  fromUserId: {
+    type: ObjectId,
+    ref: 'User',
+    required: true
+  },
+  relatedEntityId: {
+    type: ObjectId
+    // Can reference Post, Booking, or Connection
+  },
+  message: {
+    type: String,
+    required: true
+  },
+  isRead: {
+    type: Boolean,
+    default: false
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+}
+
+// Indexes
+{
+  userId: 1,
+  isRead: 1,
+  createdAt: -1
+}
+```
+
+---
+
+## 10. ERROR RESPONSES
+
+### Standard Error Format
+All API errors follow this format:
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human readable error message",
+    "details": {}
+  }
+}
+```
+
+### Common Error Codes
+
+**Authentication Errors (401):**
+- `INVALID_TOKEN`: JWT token is invalid or expired
+- `NO_TOKEN`: Authorization header missing
+- `INVALID_CREDENTIALS`: Email or password incorrect
+
+**Authorization Errors (403):**
+- `FORBIDDEN`: User doesn't have permission for this action
+- `NOT_POST_OWNER`: User is not the owner of the post
+- `NOT_BOOKING_PARTICIPANT`: User is not involved in this booking
+
+**Validation Errors (400):**
+- `VALIDATION_ERROR`: Request data validation failed
+- `MISSING_FIELD`: Required field is missing
+- `INVALID_FORMAT`: Field format is invalid
+- `TEXT_TOO_LONG`: Text exceeds maximum length
+
+**Resource Errors (404):**
+- `USER_NOT_FOUND`: User doesn't exist
+- `POST_NOT_FOUND`: Post doesn't exist
+- `BOOKING_NOT_FOUND`: Booking doesn't exist
+- `COMMENT_NOT_FOUND`: Comment doesn't exist
+
+**Conflict Errors (409):**
+- `EMAIL_EXISTS`: Email already registered
+- `CONNECTION_EXISTS`: Connection already exists
+- `REQUEST_PENDING`: Connection request already pending
+
+**Server Errors (500):**
+- `INTERNAL_ERROR`: Unexpected server error
+- `DATABASE_ERROR`: Database operation failed
+- `UPLOAD_ERROR`: File upload failed
+
+---
+
+## 11. AUTHENTICATION & AUTHORIZATION
+
+### JWT Token Structure
+```json
+{
+  "userId": "64a1b2c3d4e5f6g7h8i9j0k1",
+  "email": "john@example.com",
+  "iat": 1703678400,
+  "exp": 1704283200
+}
+```
+
+### Authorization Header Format
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+### Token Expiration
+- Access Token: 7 days
+- Refresh Token: 30 days (optional implementation)
+
+---
+
+## 12. FILE UPLOAD SPECIFICATIONS
+
+### Avatar Upload
+- **Max Size:** 5MB
+- **Allowed Types:** image/jpeg, image/png, image/webp
+- **Dimensions:** Recommended 400x400px
+- **Storage:** Cloud storage (AWS S3, Cloudinary, etc.)
+
+### Post Image Upload
+- **Max Size:** 10MB
+- **Allowed Types:** image/jpeg, image/png, image/webp
+- **Dimensions:** Max 2000x2000px
+- **Storage:** Cloud storage (AWS S3, Cloudinary, etc.)
+
+---
+
+## 13. PAGINATION
+
+All list endpoints support pagination using:
+- `limit`: Number of items per page (default: 20, max: 100)
+- `offset`: Number of items to skip (default: 0)
+
+**Example:**
+```
+GET /api/posts?limit=10&offset=20
+```
+
+**Response includes:**
+```json
+{
+  "success": true,
+  "data": {
+    "items": [...],
+    "totalCount": 150,
+    "hasMore": true,
+    "limit": 10,
+    "offset": 20
+  }
+}
+```
+
+---
+
+## 14. RATE LIMITING
+
+- **General APIs:** 100 requests per 15 minutes per user
+- **Search APIs:** 30 requests per minute per user
+- **File Upload APIs:** 10 requests per hour per user
+
+**Rate Limit Headers:**
+```
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 95
+X-RateLimit-Reset: 1703678400
+```
+
+---
+
+## 15. ENVIRONMENT VARIABLES
+
+```env
+# Server
+PORT=5000
+NODE_ENV=production
+
+# Database
+MONGODB_URI=mongodb://localhost:27017/connectin
+MONGODB_USER=admin
+MONGODB_PASSWORD=secure_password
+
+# JWT
+JWT_SECRET=your_jwt_secret_key_here
+JWT_EXPIRES_IN=7d
+
+# File Upload
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+
+# Email (Optional)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your_email@gmail.com
+SMTP_PASSWORD=your_app_password
+
+# Frontend URL
+FRONTEND_URL=http://localhost:3000
+
+# Rate Limiting
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100
+```
+
+---
+
+## 16. ADDITIONAL NOTES
+
+### Time Format
+- All timestamps use ISO 8601 format: `2024-12-27T10:30:00Z`
+- Relative time (timeAgo) calculated on frontend: "2d", "5h", "Just now"
+
+### Image URLs
+- All image URLs should be absolute paths
+- Support HTTPS only
+- Use CDN for better performance
+
+### Real-time Features (Future Enhancement)
+- WebSocket connection for notifications
+- Live booking status updates
+- Real-time chat (optional)
+
+### Caching Strategy
+- User profiles: Cache for 5 minutes
+- Posts feed: Cache for 1 minute
+- Static data (categories): Cache for 1 hour
+
+### Security Best Practices
+- Hash passwords using bcrypt (salt rounds: 12)
+- Validate all input data
+- Sanitize user-generated content
+- Use HTTPS in production
+- Implement CORS properly
+- Add helmet.js for security headers
+- Rate limit all endpoints

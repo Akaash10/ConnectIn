@@ -1,34 +1,46 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useState, useEffect } from 'react'
 import './App.css'
+import Content from './components/Content/Content'
+import TopNav from './components/TopNav/TopNav'
+import Notification from './components/Notification/Notification'
+import BookingModal from './components/BookingModal/BookingModal'
+
+interface ServiceProvider {
+  id: number;
+  name: string;
+  headline: string;
+  avatarUrl: string | null;
+  tradeCategory: string;
+}
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [selectedServiceProvider, setSelectedServiceProvider] = useState<ServiceProvider | null>(null);
+
+  useEffect(() => {
+    const handleOpenBooking = (event: CustomEvent) => {
+      setSelectedServiceProvider(event.detail.serviceProvider);
+      setIsBookingModalOpen(true);
+    };
+
+    window.addEventListener("openBookingModal" as any, handleOpenBooking);
+
+    return () => {
+      window.removeEventListener("openBookingModal" as any, handleOpenBooking);
+    };
+  }, []);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div>
+      <TopNav />
+      <Content />
+      <Notification position="top-right" />
+      <BookingModal
+        isOpen={isBookingModalOpen}
+        onClose={() => setIsBookingModalOpen(false)}
+        serviceProvider={selectedServiceProvider}
+      />
+    </div>
   )
 }
 
