@@ -1,0 +1,28 @@
+.content-center {
+  flex: 1;
+  min-width: 0;
+  max-width: 680px;
+  overflow-y: auto;
+  height: calc(100vh - 80px);
+  padding-bottom: 24px;
+}
+
+.content-center::-webkit-scrollbar {
+  width: 6px;
+}
+
+.content-center::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.coming-soon {
+  background: #fff;
+  border-radius: 8px;
+  padding: 60px 20px;
+  text-align: center;
+  margin-bottom: 16px;
+  font-size: 18px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.6);
+}
