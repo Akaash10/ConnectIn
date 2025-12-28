@@ -23,5 +23,8 @@ namespace ServiceMarketplace.API.Data
 
         public IMongoCollection<Booking> Bookings =>
             _database.GetCollection<Booking>("Bookings");
+
+        public IMongoCollection<Post> Posts =>
+            _database.GetCollection<Post>("Posts");
     }
 }
