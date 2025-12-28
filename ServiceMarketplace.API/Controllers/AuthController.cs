@@ -26,7 +26,7 @@ namespace ServiceMarketplace.API.Controllers
             var user = await _userService.RegisterAsync(dto);
             var token = _jwtHelper.GenerateToken(user);
 
-            return Ok(new { token });
+            return Ok(new { token, user });
         }
 
         [HttpPost("login")]
@@ -36,7 +36,7 @@ namespace ServiceMarketplace.API.Controllers
             var user = await _userService.LoginAsync(dto);
             var token = _jwtHelper.GenerateToken(user);
 
-            return Ok(new { token });
+            return Ok(new { token, user });
         }
     }
 }
