@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import "../Login/Login.css";
 import "./CompleteProfile.css";
+import api from "../../../api/api";
 import { TRADE_CATEGORIES, VALIDATION_LIMITS, STORAGE_KEYS } from "../../../constants/appConstants";
+import { showNotification } from "../../Notification/Notification";
 
 interface CompleteProfileProps {
   userData: any;
@@ -105,7 +107,7 @@ const CompleteProfile = ({ userData, onComplete }: CompleteProfileProps) => {
     setSelectedRoles(newRoles);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const headlineError = validateHeadline(headline);
@@ -123,27 +125,46 @@ const CompleteProfile = ({ userData, onComplete }: CompleteProfileProps) => {
 
     setIsSubmitting(true);
 
-    // Save complete profile to localStorage
-    setTimeout(() => {
-      const completeUser = {
-        id: userData.id,
-        name: userData.name,
-        email: userData.email,
-        headline: headline,
-        location: location,
-        bio: bio,
-        roles: selectedRoles,
-        avatarUrl: null,
-        profileViews: 0,
-        connections: 0
-      };
+    try {
+      // Combine registration data from step 1 with profile data from step 2
+      const { data } = await api.post(
+        "/auth/register",
+        {
+          name: userData.name,
+          email: userData.email,
+          password: userData.password,
+          headline: headline,
+          location: location || undefined,
+          bio: bio || undefined,
+          roles: selectedRoles
+        },
+        {
+          headers: {
+            "Cache-Control": "no-cache",
+            "Pragma": "no-cache"
+          }
+        }
+      );
 
-      localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(completeUser));
+      // Store token and user data
+      localStorage.setItem(STORAGE_KEYS.TOKEN, data.token);
+      localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(data.user));
       localStorage.setItem(STORAGE_KEYS.IS_AUTHENTICATED, "true");
 
-      setIsSubmitting(false);
+      // Transition to app first
       onComplete();
-    }, 1000);
+
+      // Show notification after page loads
+      setTimeout(() => {
+        showNotification("success", "Registration successful! Welcome to ConnectIn!");
+      }, 100);
+    } catch (error: any) {
+      setErrors({
+        headline: error.response?.data?.message || "Registration failed. Please try again."
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

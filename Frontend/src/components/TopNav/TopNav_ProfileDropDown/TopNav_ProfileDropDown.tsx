@@ -34,15 +34,19 @@ const TopNavProfileDropDown = () => {
   };
 
   const handleSignOut = () => {
+    // Set flag to show logout notification after reload
+    localStorage.setItem("showLogoutNotification", "true");
+
     // Clear authentication data
     localStorage.removeItem(STORAGE_KEYS.IS_AUTHENTICATED);
     localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+    localStorage.removeItem(STORAGE_KEYS.TOKEN);
 
     // Dispatch sign out event to App component
     const event = new CustomEvent(CUSTOM_EVENTS.SIGN_OUT);
     window.dispatchEvent(event);
 
-    // Reload the page to reset state
+    // Reload the page to show login screen
     window.location.reload();
   };
 
