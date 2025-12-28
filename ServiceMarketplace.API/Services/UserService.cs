@@ -25,8 +25,11 @@ namespace ServiceMarketplace.API.Services
             {
                 Name = dto.Name,
                 Email = dto.Email,
-                Phone = dto.Phone,
-                PasswordHash = PasswordHasher.Hash(dto.Password)
+                PasswordHash = PasswordHasher.Hash(dto.Password),
+                Headline = dto.Headline,
+                Location = dto.Location,
+                Bio = dto.Bio,
+                Roles = dto.Roles ?? new List<string> { "General" }
             };
 
             await _userRepository.CreateAsync(user);
