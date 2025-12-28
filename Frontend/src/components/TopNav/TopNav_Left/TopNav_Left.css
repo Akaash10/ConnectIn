@@ -128,3 +128,19 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.search-no-results {
+  padding: 32px 16px;
+  text-align: center;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.no-results-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.no-results-text {
+  font-size: 14px;
+  font-weight: 600;
+}

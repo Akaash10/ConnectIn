@@ -66,7 +66,7 @@ const TopNavLeft = () => {
 
     const results = Array.from(usersMap.values()).slice(0, 5); // Limit to 5 results
     setSearchResults(results);
-    setShowResults(results.length > 0);
+    setShowResults(true); // Show dropdown even if no results
   };
 
   const handleUserClick = (userId: number) => {
@@ -92,27 +92,34 @@ const TopNavLeft = () => {
             }
           }}
         />
-        {showResults && searchResults.length > 0 && (
+        {showResults && (
           <div className="search-results-dropdown">
-            {searchResults.map((user) => (
-              <div
-                key={user.id}
-                className="search-result-item"
-                onClick={() => handleUserClick(user.id)}
-              >
-                <div className="search-result-avatar">
-                  {user.avatarUrl ? (
-                    <img src={user.avatarUrl} alt={user.name} />
-                  ) : (
-                    user.name.charAt(0)
-                  )}
+            {searchResults.length > 0 ? (
+              searchResults.map((user) => (
+                <div
+                  key={user.id}
+                  className="search-result-item"
+                  onClick={() => handleUserClick(user.id)}
+                >
+                  <div className="search-result-avatar">
+                    {user.avatarUrl ? (
+                      <img src={user.avatarUrl} alt={user.name} />
+                    ) : (
+                      user.name.charAt(0)
+                    )}
+                  </div>
+                  <div className="search-result-info">
+                    <div className="search-result-name">{user.name}</div>
+                    <div className="search-result-headline">{user.headline}</div>
+                  </div>
                 </div>
-                <div className="search-result-info">
-                  <div className="search-result-name">{user.name}</div>
-                  <div className="search-result-headline">{user.headline}</div>
-                </div>
+              ))
+            ) : (
+              <div className="search-no-results">
+                <div className="no-results-icon">🔍</div>
+                <div className="no-results-text">No users found</div>
               </div>
-            ))}
+            )}
           </div>
         )}
       </div>

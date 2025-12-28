@@ -2,15 +2,16 @@ import { useEffect, useState } from "react";
 import "./TopNav_ProfileDropDown.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
+import { STORAGE_KEYS, CUSTOM_EVENTS, DEFAULT_USER } from "../../../constants/appConstants";
 
 const TopNavProfileDropDown = () => {
   const [currentUser, setCurrentUser] = useState<any>(null);
 
   const loadUser = () => {
-    const user = JSON.parse(localStorage.getItem("currentUser") || JSON.stringify({
-      name: "John Doe",
-      headline: "Administrator",
-      avatarUrl: null,
+    const user = JSON.parse(localStorage.getItem(STORAGE_KEYS.CURRENT_USER) || JSON.stringify({
+      name: DEFAULT_USER.name,
+      headline: DEFAULT_USER.headline,
+      avatarUrl: DEFAULT_USER.avatarUrl,
     }));
     setCurrentUser(user);
   };
@@ -23,13 +24,26 @@ const TopNavProfileDropDown = () => {
       loadUser();
     };
 
-    window.addEventListener("profileUpdated", handleProfileUpdated);
-    return () => window.removeEventListener("profileUpdated", handleProfileUpdated);
+    window.addEventListener(CUSTOM_EVENTS.PROFILE_UPDATED, handleProfileUpdated);
+    return () => window.removeEventListener(CUSTOM_EVENTS.PROFILE_UPDATED, handleProfileUpdated);
   }, []);
 
   const handleViewProfile = () => {
-    const event = new CustomEvent("navigate", { detail: "profile" });
+    const event = new CustomEvent(CUSTOM_EVENTS.NAVIGATE, { detail: "profile" });
     window.dispatchEvent(event);
+  };
+
+  const handleSignOut = () => {
+    // Clear authentication data
+    localStorage.removeItem(STORAGE_KEYS.IS_AUTHENTICATED);
+    localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+
+    // Dispatch sign out event to App component
+    const event = new CustomEvent(CUSTOM_EVENTS.SIGN_OUT);
+    window.dispatchEvent(event);
+
+    // Reload the page to reset state
+    window.location.reload();
   };
 
   if (!currentUser) return null;
@@ -58,7 +72,7 @@ const TopNavProfileDropDown = () => {
 
       <div className="divider" />
 
-      <div className="dropdown-item signout">Sign Out</div>
+      <div className="dropdown-item signout" onClick={handleSignOut}>Sign Out</div>
     </div>
   );
 };

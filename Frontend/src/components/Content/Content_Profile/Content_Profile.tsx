@@ -171,7 +171,7 @@ const Content_Profile = ({ userId }: ProfileProps) => {
             </div>
           ) : (
             userPosts.map((post) => (
-              <ViewPost key={post.id} post={post} />
+              <ViewPost key={post.id} post={post} isProfilePage={true} />
             ))
           )}
         </div>
