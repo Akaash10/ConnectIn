@@ -107,7 +107,7 @@ const Notification = ({ position = "top-right" }: NotificationProps) => {
 export const showNotification = (
   type: NotificationType,
   message: string,
-  duration: number = 3000
+  duration: number = 4000
 ) => {
   const event = new CustomEvent("showNotification", {
     detail: { type, message, duration },

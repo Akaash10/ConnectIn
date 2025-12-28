@@ -140,19 +140,14 @@ const Register = ({ onSwitchToLogin, onRegisterSuccess }: RegisterProps) => {
       return;
     }
 
-    setIsSubmitting(true);
+    // Pass registration data to complete profile step
+    const userData = {
+      name: formData.name,
+      email: formData.email,
+      password: formData.password
+    };
 
-    // Simulate API call
-    setTimeout(() => {
-      const userData = {
-        name: formData.name,
-        email: formData.email,
-        id: Date.now()
-      };
-
-      setIsSubmitting(false);
-      onRegisterSuccess(userData);
-    }, 1000);
+    onRegisterSuccess(userData);
   };
 
   return (

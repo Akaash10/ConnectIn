@@ -102,6 +102,7 @@ export const DATE_FORMATS = {
 export const STORAGE_KEYS = {
   IS_AUTHENTICATED: "isAuthenticated",
   CURRENT_USER: "currentUser",
+  TOKEN: "authToken",
   MY_POSTS: "myPosts",
   POST_COMMENTS: "postComments",
   BOOKINGS: "bookings",

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import './App.css'
 import Content from './components/Content/Content'
 import TopNav from './components/TopNav/TopNav'
-import Notification from './components/Notification/Notification'
+import Notification, { showNotification } from './components/Notification/Notification'
 import BookingModal from './components/BookingModal/BookingModal'
 import Login from './components/Auth/Login/Login'
 import Register from './components/Auth/Register/Register'
@@ -33,6 +33,15 @@ function App() {
       setAuthView('app');
       // Initialize sample data when user is authenticated
       ensureSampleData();
+    }
+
+    // Check if we need to show post created notification after page reload
+    const shouldShowNotification = localStorage.getItem('showPostCreatedNotification');
+    if (shouldShowNotification === 'true') {
+      localStorage.removeItem('showPostCreatedNotification');
+      setTimeout(() => {
+        showNotification('success', 'Your post has been published successfully!');
+      }, 800);
     }
   }, []);
 
@@ -66,28 +75,37 @@ function App() {
 
   if (authView === 'login') {
     return (
-      <Login
-        onSwitchToRegister={() => setAuthView('register')}
-        onLoginSuccess={handleLoginSuccess}
-      />
+      <>
+        <Login
+          onSwitchToRegister={() => setAuthView('register')}
+          onLoginSuccess={handleLoginSuccess}
+        />
+        <Notification position="top-right" />
+      </>
     );
   }
 
   if (authView === 'register') {
     return (
-      <Register
-        onSwitchToLogin={() => setAuthView('login')}
-        onRegisterSuccess={handleRegisterSuccess}
-      />
+      <>
+        <Register
+          onSwitchToLogin={() => setAuthView('login')}
+          onRegisterSuccess={handleRegisterSuccess}
+        />
+        <Notification position="top-right" />
+      </>
     );
   }
 
   if (authView === 'complete-profile') {
     return (
-      <CompleteProfile
-        userData={registrationData}
-        onComplete={handleCompleteProfile}
-      />
+      <>
+        <CompleteProfile
+          userData={registrationData}
+          onComplete={handleCompleteProfile}
+        />
+        <Notification position="top-right" />
+      </>
     );
   }
 

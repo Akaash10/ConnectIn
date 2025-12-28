@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./Login.css";
+import  api  from "../../../api/api"
 import { VALIDATION_LIMITS, STORAGE_KEYS } from "../../../constants/appConstants";
+import { showNotification } from "../../Notification/Notification";
 
 interface LoginProps {
   onSwitchToRegister: () => void;
@@ -12,6 +14,17 @@ const Login = ({ onSwitchToRegister, onLoginSuccess }: LoginProps) => {
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Check for logout notification flag on component mount
+  useEffect(() => {
+    const showLogoutNotif = localStorage.getItem("showLogoutNotification");
+    if (showLogoutNotif === "true") {
+      localStorage.removeItem("showLogoutNotification");
+      setTimeout(() => {
+        showNotification("success", "Logged out successfully!");
+      }, 100);
+    }
+  }, []);
 
   const validateEmail = (value: string): string | undefined => {
     if (!value) {
@@ -61,43 +74,54 @@ const Login = ({ onSwitchToRegister, onLoginSuccess }: LoginProps) => {
     setErrors({ ...errors, password: error });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    const emailError = validateEmail(email);
-    const passwordError = validatePassword(password);
+  const emailError = validateEmail(email);
+  const passwordError = validatePassword(password);
 
-    if (emailError || passwordError) {
-      setErrors({ email: emailError, password: passwordError });
-      return;
+  if (emailError || passwordError) {
+    setErrors({ email: emailError, password: passwordError });
+    return;
+  }
+
+  setIsSubmitting(true);
+
+  try {
+    const { data } = await api.post(
+  "/auth/login",
+  { email, password },
+  {
+    headers: {
+      "Cache-Control": "no-cache",
+      "Pragma": "no-cache"
     }
+  }
+);
 
-    setIsSubmitting(true);
+    localStorage.setItem(STORAGE_KEYS.TOKEN, data.token);
+    localStorage.setItem(
+      STORAGE_KEYS.CURRENT_USER,
+      JSON.stringify(data.user)
+    );
+    localStorage.setItem(STORAGE_KEYS.IS_AUTHENTICATED, "true");
 
-    // Simulate API call
+    // Transition to app first
+    onLoginSuccess();
+
+    // Show notification after page loads
     setTimeout(() => {
-      // For demo purposes, accept any valid credentials
-      // In production, this would validate against backend
-      const currentUser = {
-        id: Date.now(),
-        name: "John Doe",
-        email: email,
-        headline: "Professional",
-        location: "",
-        bio: "",
-        avatarUrl: null,
-        profileViews: 0,
-        connections: 0,
-        roles: ["General"]
-      };
-
-      localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
-      localStorage.setItem(STORAGE_KEYS.IS_AUTHENTICATED, "true");
-
-      setIsSubmitting(false);
-      onLoginSuccess();
-    }, 1000);
-  };
+      showNotification("success", "Login successful! Welcome back!");
+    }, 100);
+  } catch (error: any) {
+    setErrors({
+      email: undefined,
+      password: error.response?.data?.message || "Login failed. Please check your credentials."
+    });
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   return (
     <div className="auth-container">

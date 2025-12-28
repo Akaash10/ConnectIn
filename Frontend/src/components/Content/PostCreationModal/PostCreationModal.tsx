@@ -101,9 +101,6 @@ const PostCreationModal = ({ isOpen, onClose }: PostCreationModalProps) => {
 
     localStorage.setItem("myPosts", JSON.stringify([newPost, ...posts]));
 
-    // Show success notification
-    showNotification("success", "Your post has been published successfully!");
-
     // Also add to notification center for later viewing
     const notifications = JSON.parse(localStorage.getItem("notifications") || "[]");
     notifications.unshift({
@@ -116,6 +113,10 @@ const PostCreationModal = ({ isOpen, onClose }: PostCreationModalProps) => {
     localStorage.setItem("notifications", JSON.stringify(notifications));
     window.dispatchEvent(new Event("notificationAdded"));
 
+    // Set flag to show notification after page reload
+    localStorage.setItem("showPostCreatedNotification", "true");
+
+    // Close modal and reload
     setTimeout(() => {
       setText("");
       setSelectedFile(null);
