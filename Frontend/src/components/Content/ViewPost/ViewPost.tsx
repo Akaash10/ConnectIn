@@ -26,9 +26,10 @@ interface PostProps {
   };
   isEnd?: boolean;
   showBookButton?: boolean;
+  isProfilePage?: boolean;
 }
 
-const ViewPost = ({ post, isEnd, showBookButton = false }: PostProps) => {
+const ViewPost = ({ post, isEnd, showBookButton = false, isProfilePage = false }: PostProps) => {
   const [expanded, setExpanded] = useState(false);
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
@@ -278,7 +279,12 @@ const ViewPost = ({ post, isEnd, showBookButton = false }: PostProps) => {
           )}
         </div>
         <div className="post-info">
-          <h4 className="post-author" onClick={handleAuthorClick}>{author}</h4>
+          <div className="post-author-row">
+            <h4 className="post-author" onClick={handleAuthorClick}>{author}</h4>
+            {post.tradeCategory && post.tradeCategory !== "General" && (
+              <span className="post-category-badge">{post.tradeCategory}</span>
+            )}
+          </div>
           <p className="post-headline">{headline}</p>
           <div className="post-time">
             <span>{timeAgo}</span>
@@ -311,13 +317,15 @@ const ViewPost = ({ post, isEnd, showBookButton = false }: PostProps) => {
                 >
                   Edit Post
                 </button>
-                <button
-                  type="button"
-                  className="post-menu-item post-menu-delete"
-                  onClick={handleDeletePost}
-                >
-                  Delete Post
-                </button>
+                {isProfilePage && (
+                  <button
+                    type="button"
+                    className="post-menu-item post-menu-delete"
+                    onClick={handleDeletePost}
+                  >
+                    Delete Post
+                  </button>
+                )}
               </div>
             )}
           </div>

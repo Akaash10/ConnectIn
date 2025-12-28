@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import "./Content_Bookings.css";
 import { showNotification } from "../../Notification/Notification";
+import { STORAGE_KEYS, BOOKING_STATUS, BOOKING_STATUS_COLORS } from "../../../constants/appConstants";
 
 interface Booking {
   id: number;
@@ -24,7 +25,7 @@ const Content_Bookings = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
 
-  const currentUser = JSON.parse(localStorage.getItem("currentUser") || JSON.stringify({
+  const currentUser = JSON.parse(localStorage.getItem(STORAGE_KEYS.CURRENT_USER) || JSON.stringify({
     id: Date.now(),
     name: "Sanjay A Kanakaraj",
     headline: "Software Development Engineer",
@@ -36,7 +37,7 @@ const Content_Bookings = () => {
   }, []);
 
   const loadBookings = () => {
-    const allBookings = JSON.parse(localStorage.getItem("bookings") || "[]");
+    const allBookings = JSON.parse(localStorage.getItem(STORAGE_KEYS.BOOKINGS) || "[]");
     setBookings(allBookings);
   };
 
@@ -52,10 +53,10 @@ const Content_Bookings = () => {
 
   const handleAcceptBooking = (bookingId: number) => {
     const updatedBookings = bookings.map(b =>
-      b.id === bookingId ? { ...b, status: "accepted" as const } : b
+      b.id === bookingId ? { ...b, status: BOOKING_STATUS.ACCEPTED } : b
     );
     setBookings(updatedBookings);
-    localStorage.setItem("bookings", JSON.stringify(updatedBookings));
+    localStorage.setItem(STORAGE_KEYS.BOOKINGS, JSON.stringify(updatedBookings));
 
     const booking = bookings.find(b => b.id === bookingId);
     if (booking) {
@@ -65,10 +66,10 @@ const Content_Bookings = () => {
 
   const handleRejectBooking = (bookingId: number) => {
     const updatedBookings = bookings.map(b =>
-      b.id === bookingId ? { ...b, status: "rejected" as const } : b
+      b.id === bookingId ? { ...b, status: BOOKING_STATUS.REJECTED } : b
     );
     setBookings(updatedBookings);
-    localStorage.setItem("bookings", JSON.stringify(updatedBookings));
+    localStorage.setItem(STORAGE_KEYS.BOOKINGS, JSON.stringify(updatedBookings));
 
     const booking = bookings.find(b => b.id === bookingId);
     if (booking) {
@@ -78,10 +79,10 @@ const Content_Bookings = () => {
 
   const handleCompleteBooking = (bookingId: number) => {
     const updatedBookings = bookings.map(b =>
-      b.id === bookingId ? { ...b, status: "completed" as const } : b
+      b.id === bookingId ? { ...b, status: BOOKING_STATUS.COMPLETED } : b
     );
     setBookings(updatedBookings);
-    localStorage.setItem("bookings", JSON.stringify(updatedBookings));
+    localStorage.setItem(STORAGE_KEYS.BOOKINGS, JSON.stringify(updatedBookings));
     showNotification("success", "Booking marked as completed!");
   };
 
@@ -96,18 +97,7 @@ const Content_Bookings = () => {
   };
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case "pending":
-        return "#f5b800";
-      case "accepted":
-        return "#057642";
-      case "rejected":
-        return "#cc1016";
-      case "completed":
-        return "#0a66c2";
-      default:
-        return "#666";
-    }
+    return BOOKING_STATUS_COLORS[status as keyof typeof BOOKING_STATUS_COLORS] || "#666";
   };
 
   const getStatusLabel = (status: string) => {
@@ -136,7 +126,7 @@ const Content_Bookings = () => {
     // Get all bookings for this user (as customer or provider)
     return bookings.filter(b => {
       const isMyBooking = b.customerId === currentUser.id || b.providerId === currentUser.id;
-      return isMyBooking && b.date === dateStr && b.status === "accepted";
+      return isMyBooking && b.date === dateStr && b.status === BOOKING_STATUS.ACCEPTED;
     });
   };
 
@@ -240,14 +230,14 @@ const Content_Bookings = () => {
           className={`tab-btn ${activeTab === "my-bookings" ? "active" : ""}`}
           onClick={() => setActiveTab("my-bookings")}
         >
-          My Bookings ({myBookings.length})
+          Booked by me ({myBookings.length})
         </button>
         <button
           type="button"
           className={`tab-btn ${activeTab === "requests" ? "active" : ""}`}
           onClick={() => setActiveTab("requests")}
         >
-          Service Requests ({serviceRequests.filter(r => r.status === "pending").length})
+          Booked for my service ({serviceRequests.filter(r => r.status === BOOKING_STATUS.PENDING).length})
         </button>
       </div>
 
@@ -302,7 +292,7 @@ const Content_Bookings = () => {
                       </div>
                     )}
                   </div>
-                  {booking.status === "accepted" && (
+                  {booking.status === BOOKING_STATUS.ACCEPTED && (
                     <div className="booking-card-actions">
                       <button
                         type="button"
@@ -365,7 +355,7 @@ const Content_Bookings = () => {
                       </div>
                     )}
                   </div>
-                  {booking.status === "pending" && (
+                  {booking.status === BOOKING_STATUS.PENDING && (
                     <div className="booking-card-actions">
                       <button
                         type="button"
@@ -383,7 +373,7 @@ const Content_Bookings = () => {
                       </button>
                     </div>
                   )}
-                  {booking.status === "accepted" && (
+                  {booking.status === BOOKING_STATUS.ACCEPTED && (
                     <div className="booking-card-actions">
                       <button
                         type="button"

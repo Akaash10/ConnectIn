@@ -151,7 +151,7 @@ const ProfileEditModal = ({ isOpen, onClose }: ProfileEditModalProps) => {
               className="edit-input"
               value={headline}
               onChange={(e) => setHeadline(e.target.value.slice(0, MAX_HEADLINE_LENGTH))}
-              placeholder="e.g., Software Engineer at Company"
+              placeholder="e.g., Plumber at ABC Services"
             />
             <span className="char-count">
               {headline.length}/{MAX_HEADLINE_LENGTH}
